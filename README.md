@@ -7,6 +7,8 @@ Další kolo se odemkne, až je to předchozí dokončené.
 **Web:** https://jakubpechoucek-glitch.github.io/mathpractise/
 (náhled všech kol bez odemykání: `?vse`)
 
+Aplikace i úlohy jsou **anglicky**, protože Lukáš studuje v angličtině. Dokumentace je česky.
+
 ## Jak to funguje
 
 - Lukáš počítá na papíře nebo v kalkulačce a do políčka zapíše **jen výsledek**.
