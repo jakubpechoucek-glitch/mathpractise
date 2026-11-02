@@ -65,8 +65,8 @@
       window.renderMathInElement(el, { delimiters: [{ left: "$", right: "$", display: false }], throwOnError: false });
     } catch (e) { /* zůstane text */ }
   }
-  const datum = (ts) => new Date(ts).toLocaleDateString("cs-CZ", { day: "numeric", month: "numeric" });
-  const tvar = (n, a, b, c) => (n === 1 ? a : n >= 2 && n <= 4 ? b : c);
+  const datum = (ts) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const otazky = (n) => n + (n === 1 ? " question" : " questions");
 
   // ---------- přehled kol ----------
 
@@ -77,9 +77,9 @@
     app.innerHTML = `
       <a class="zpet" href="/rozcestnik/">← Rozcestník</a>
       <h1>Exponentials &amp; Logarithms</h1>
-      <p class="lead">Příprava na assessment v 7 kolech – jedno kolo denně. Další kolo se odemkne, až dokončíš to předchozí.
-        Počítej na papíře nebo v kalkulačce a sem zapiš jen výsledek.</p>
-      <ol class="cesta" aria-label="Průběh">
+      <p class="lead">Assessment prep in 7 rounds – one round a day. The next round unlocks when you finish the previous one.
+        Work on paper or with your calculator, and type only the final answer here.</p>
+      <ol class="cesta" aria-label="Progress">
         ${KOLA.map((k, i) => `<li class="${prehledKola(k).hotovo ? "hotovo" : i === prvniNehotove ? "ted" : ""}"></li>`).join("")}
       </ol>
       <ul class="kola">
@@ -89,21 +89,21 @@
           const trida = p.hotovo ? "hotovo" : odemceno ? (i === prvniNehotove ? "ted" : "") : "zamceno";
           const stavText = p.hotovo
             ? `✓ ${p.spravne}/${p.celkem}${stav.kola[k.id] ? " · " + datum(stav.kola[k.id]) : ""}`
-            : !odemceno ? "🔒 zamčeno"
-            : p.uzavreno ? `${p.uzavreno}/${p.celkem} hotovo` : "Začít →";
+            : !odemceno ? "🔒 locked"
+            : p.uzavreno ? `${p.uzavreno}/${p.celkem} done` : "Start →";
           const obsah = `
-            <span class="den">den<b>${i + 1}</b></span>
-            <span><h2>${esc(k.nazev)}</h2><p>${k.ulohy.length} ${tvar(k.ulohy.length, "úloha", "úlohy", "úloh")} · ${esc(k.popis)}</p></span>
+            <span class="den">day<b>${i + 1}</b></span>
+            <span><h2>${esc(k.nazev)}</h2><p>${otazky(k.ulohy.length)} · ${esc(k.popis)}</p></span>
             <span class="stav">${stavText}</span>`;
           return `<li>${odemceno
             ? `<a class="kolo ${trida}" href="#/kolo/${k.id}">${obsah}</a>`
             : `<div class="kolo ${trida}" aria-disabled="true">${obsah}</div>`}</li>`;
         }).join("")}
       </ul>
-      ${opak.length ? `<a class="opakovani" href="#/opakovani"><span>K zopakování: ${opak.length} ${tvar(opak.length, "úloha", "úlohy", "úloh")}, které napoprvé nevyšly</span><span>Procvičit →</span></a>` : ""}
-      <p class="paticka">Postup se ukládá v tomhle prohlížeči. <button type="button" id="smazat">Začít znovu od nuly</button></p>`;
+      ${opak.length ? `<a class="opakovani" href="#/opakovani"><span>To review: ${otazky(opak.length)} you didn't get right first time</span><span>Practise →</span></a>` : ""}
+      <p class="paticka">Your progress is saved in this browser. <button type="button" id="smazat">Start again from scratch</button></p>`;
     app.querySelector("#smazat").addEventListener("click", () => {
-      if (confirm("Opravdu smazat celý postup a začít od prvního kola?")) {
+      if (confirm("Really delete all your progress and start again from day 1?")) {
         stav = { ulohy: {}, kola: {}, opakovani: {} };
         uloz();
         domu();
@@ -117,12 +117,12 @@
     const i = KOLA.findIndex((k) => k.id === id);
     if (i < 0 || !jeOdemceno(i)) { location.hash = ""; return; }
     const kolo = KOLA[i];
-    document.title = `Den ${i + 1} · ${kolo.nazev}`;
+    document.title = `Day ${i + 1} · ${kolo.nazev}`;
     vykresliSadu({
       nadpis: kolo.nazev,
-      podnadpis: `Den ${i + 1} ze ${KOLA.length}`,
+      podnadpis: `Day ${i + 1} of ${KOLA.length}`,
       popis: kolo.popis,
-      stitky: [kolo.kalkulacka ? "🧮 s kalkulačkou" : "🚫 bez kalkulačky"],
+      stitky: [kolo.kalkulacka ? "🧮 calculator allowed" : "🚫 no calculator"],
       ulohy: kolo.ulohy,
       sada: stav.ulohy,
       poZmene: () => {
@@ -137,31 +137,31 @@
   function banner(kolo, i, p) {
     const dalsi = KOLA[i + 1];
     return `<div class="hotovo-banner">
-      <h2>Kolo hotovo 🎉</h2>
-      <p>Napoprvé správně ${p.napoprve} z ${p.celkem}, celkem správně ${p.spravne}.
-        ${dalsi ? `Odemklo se kolo ${i + 2}: ${esc(dalsi.nazev)}.` : "To bylo poslední kolo – hodně štěstí na assessmentu!"}</p>
-      ${dalsi ? `<a href="#/kolo/${dalsi.id}">Pokračovat na den ${i + 2} →</a> · ` : ""}<a href="#/">Přehled kol</a>
+      <h2>Round complete 🎉</h2>
+      <p>Right first time: ${p.napoprve} of ${p.celkem}. Correct in total: ${p.spravne}.
+        ${dalsi ? `Day ${i + 2} is now unlocked: ${esc(dalsi.nazev)}.` : "That was the last round – good luck in the assessment!"}</p>
+      ${dalsi ? `<a href="#/kolo/${dalsi.id}">Continue to day ${i + 2} →</a> · ` : ""}<a href="#/">All rounds</a>
     </div>`;
   }
 
   function zobrazOpakovani() {
     const ulohy = kOpakovani();
-    document.title = "Opakování chyb";
+    document.title = "Review mistakes";
     vykresliSadu({
-      nadpis: "Opakování chyb",
-      podnadpis: "Úlohy, které napoprvé nevyšly",
-      popis: "Zkus je znovu. Výsledek kol se tím nemění.",
+      nadpis: "Review mistakes",
+      podnadpis: "Questions you didn't get right first time",
+      popis: "Try them again. This doesn't change your round scores.",
       stitky: [],
       ulohy,
       sada: stav.opakovani,
       poZmene: () => "",
-      ukazPokrok: () => `${ulohy.filter((u) => stav.opakovani[u.id] && stav.opakovani[u.id].ok).length}/${ulohy.length} správně`,
+      ukazPokrok: () => `${ulohy.filter((u) => stav.opakovani[u.id] && stav.opakovani[u.id].ok).length}/${ulohy.length} correct`,
     });
   }
 
   function vykresliSadu(o) {
     app.innerHTML = `
-      <a class="zpet" href="#/">← Všechna kola</a>
+      <a class="zpet" href="#/">← All rounds</a>
       <p class="navod" style="margin:0 0 2px">${esc(o.podnadpis)}</p>
       <h1>${esc(o.nadpis)}</h1>
       <p class="lead">${esc(o.popis)}</p>
@@ -187,7 +187,7 @@
     const otevrena = !s.uzavreno;
     el.className = "uloha" + (s.ok ? " ok" : s.uzavreno ? " uzavreno-chyba" : "");
     el.id = "u-" + u.id;
-    const vysledek = s.ok ? (s.prvni ? "✓ napoprvé" : "✓ správně") : s.uzavreno ? "✗ podívej se na řešení" : s.pokusy ? `pokus ${s.pokusy + 1} ze ${MAX_POKUSU[u.typ] || 1}` : "";
+    const vysledek = s.ok ? (s.prvni ? "✓ first time" : "✓ correct") : s.uzavreno ? "✗ see the solution" : s.pokusy ? `attempt ${s.pokusy + 1} of ${MAX_POKUSU[u.typ] || 1}` : "";
 
     el.innerHTML = `
       <header><span class="cislo">${cislo}</span><span class="zdroj">${esc(u.zdroj || "")}</span><span class="vysledek">${vysledek}</span></header>
@@ -202,10 +202,10 @@
     const dalsi = el.querySelector(".dalsi");
 
     const ukazReseni = () => {
-      dalsi.insertAdjacentHTML("beforeend", `<div class="reseni"><h3>Řešení</h3>${text(u.reseni)}${u.graf ? graf(u.graf) : ""}</div>`);
+      dalsi.insertAdjacentHTML("beforeend", `<div class="reseni"><h3>Solution</h3>${text(u.reseni)}${u.graf ? graf(u.graf) : ""}</div>`);
     };
     const ukazNapovedu = () => {
-      dalsi.insertAdjacentHTML("afterbegin", `<div class="napoveda"><h3>Nápověda</h3>${text(u.napoveda)}</div>`);
+      dalsi.insertAdjacentHTML("afterbegin", `<div class="napoveda"><h3>Hint</h3>${text(u.napoveda)}</div>`);
     };
 
     const zmena = () => {
@@ -222,13 +222,13 @@
     if (u.typ === "sam") {
       // úloha na náčrt / důkaz – Lukáš si ji ohodnotí sám podle řešení
       if (otevrena && !s.ukazano) {
-        odp.innerHTML = `<p class="navod">Tohle se nedá napsat do políčka – udělej to na papír a pak porovnej s řešením.</p>
-          <button class="tl" type="button">Mám hotovo, ukázat řešení</button>`;
+        odp.innerHTML = `<p class="navod">You can't type this one – do it on paper, then compare with the solution.</p>
+          <button class="tl" type="button">Done – show the solution</button>`;
         odp.querySelector("button").onclick = () => { s.ukazano = true; uloz(); vykresliUlohu(el, u, cislo, o, ukazUvod); };
       } else {
         ukazReseni();
         if (otevrena) {
-          dalsi.insertAdjacentHTML("beforeend", `<div class="sebehodnoceni"><button class="tl ano" type="button">✓ Měl jsem to správně</button><button class="tl ne" type="button">✗ Měl jsem chybu</button></div>`);
+          dalsi.insertAdjacentHTML("beforeend", `<div class="sebehodnoceni"><button class="tl ano" type="button">✓ I got it right</button><button class="tl ne" type="button">✗ I made a mistake</button></div>`);
           dalsi.querySelector(".ano").onclick = () => { Object.assign(s, { ok: true, uzavreno: true, prvni: true, pokusy: 1 }); zmena(); };
           dalsi.querySelector(".ne").onclick = () => { Object.assign(s, { ok: false, uzavreno: true, prvni: false, pokusy: 1 }); zmena(); };
         }
@@ -253,17 +253,17 @@
       });
     } else {
       const navody = {
-        cislo: "Číslo – přesně (3/7, 2√3, ln(2)/3, e^4) nebo zaokrouhlené na 3 platné číslice.",
-        mnozina: "Všechna řešení odděl středníkem, např. 2; −3. Když vyjde jen jedno, napiš jedno.",
-        vyraz: `Výraz v proměnné ${(u.promenne || ["x"]).join(", ")}. Logaritmus se základem piš log_3(x).`,
+        cislo: "A number – exact (3/7, 2√3, ln(2)/3, e^4) or rounded to 3 significant figures.",
+        mnozina: "Separate all solutions with semicolons, e.g. 2; −3. If there is only one, write just one.",
+        vyraz: `An expression in ${(u.promenne || ["x"]).join(", ")}. Type a log with a base as log_3(x).`,
       };
-      if (u.desetinnaMista === 0) navody.cislo = "Celé číslo (zaokrouhli na celé).";
+      if (u.desetinnaMista === 0) navody.cislo = "A whole number (round to the nearest whole number).";
       odp.innerHTML = `
         <p class="navod">${navody[u.typ]}</p>
         <form class="radek" autocomplete="off">
           <input type="text" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"
-            aria-label="Odpověď" value="${esc(s.odpoved || "")}" ${otevrena ? "" : "disabled"}>
-          <button class="tl" type="submit" ${otevrena ? "" : "disabled"}>Zkontrolovat</button>
+            aria-label="Answer" value="${esc(s.odpoved || "")}" ${otevrena ? "" : "disabled"}>
+          <button class="tl" type="submit" ${otevrena ? "" : "disabled"}>Check</button>
         </form>
         ${otevrena ? `<div class="klavesy">${klavesy(u).map((k) => `<button type="button" data-vlozit="${esc(k[1])}" aria-label="${esc(k[0])}">${esc(k[0])}</button>`).join("")}</div>` : ""}
         <div class="nahled"></div>`;
@@ -273,7 +273,7 @@
         const n = K.nahled(u, input.value);
         if (n.chyba) nahled.innerHTML = `<span class="chyba">${esc(n.chyba)}</span>`;
         else if (n.latex) {
-          nahled.innerHTML = "Rozumím tomu jako: <span></span>";
+          nahled.innerHTML = "I read this as: <span></span>";
           try { window.katex.render(n.latex, nahled.querySelector("span"), { throwOnError: false }); }
           catch (e) { nahled.querySelector("span").textContent = input.value; }
         } else nahled.innerHTML = "";
@@ -302,7 +302,7 @@
           return;
         }
         zaznamenej(s, u, r.ok);
-        s.posledni = r.ok ? (r.zprava || "Správně!") : r.zprava || "Tohle nesedí.";
+        s.posledni = r.ok ? (r.zprava || "Correct!") : r.zprava || "That's not right.";
         s.skoro = !!r.skoro;
         zmena();
       };
@@ -314,22 +314,22 @@
       let t = s.posledni;
       if (!s.ok && !s.uzavreno) {
         const zbyva = (MAX_POKUSU[u.typ] || 1) - s.pokusy;
-        t += ` Zkus to znovu (${zbyva === 1 ? "poslední pokus" : "zbývají " + zbyva + " pokusy"}).`;
+        t += ` Try again (${zbyva === 1 ? "last attempt" : zbyva + " attempts left"}).`;
       }
-      if (!s.ok && s.uzavreno) t = s.pokusy ? "Ani tentokrát to nevyšlo – projdi si řešení níže." : "Řešení zobrazeno – projdi si ho a zkus pochopit postup.";
+      if (!s.ok && s.uzavreno) t = s.pokusy ? "Not this time – go through the solution below." : "Solution shown – go through it and make sure you understand each step.";
       zpravy.innerHTML = `<p class="zprava ${trida}">${esc(t)}</p>`;
     }
 
     if (otevrena) {
       const tl = [];
-      if (u.napoveda) tl.push(`<button class="tl vedlejsi male" type="button" data-a="napoveda">💡 Nápověda</button>`);
-      tl.push(`<button class="tl vedlejsi male" type="button" data-a="vzdat">Ukázat řešení</button>`);
+      if (u.napoveda) tl.push(`<button class="tl vedlejsi male" type="button" data-a="napoveda">💡 Hint</button>`);
+      tl.push(`<button class="tl vedlejsi male" type="button" data-a="vzdat">Show solution</button>`);
       dalsi.innerHTML = `<div class="akce">${tl.join("")}</div>`;
       const bN = dalsi.querySelector('[data-a="napoveda"]');
       if (bN) bN.onclick = () => { bN.remove(); ukazNapovedu(); vzorce(dalsi); };
       dalsi.querySelector('[data-a="vzdat"]').onclick = () => {
-        if (!confirm("Zobrazit řešení? Úloha se tím uzavře jako nevyřešená.")) return;
-        Object.assign(s, { uzavreno: true, ok: false, prvni: s.prvni === null ? false : s.prvni, posledni: "Řešení zobrazeno." });
+        if (!confirm("Show the solution? The question will be marked as not solved.")) return;
+        Object.assign(s, { uzavreno: true, ok: false, prvni: s.prvni === null ? false : s.prvni, posledni: "Solution shown." });
         zmena();
       };
     } else {
@@ -362,7 +362,7 @@
     const sx = (x) => P + ((x - x0) / (x1 - x0)) * (W - 2 * P);
     const sy = (y) => H - P - ((y - y0) / (y1 - y0)) * (H - 2 * P);
     const krok = (x1 - x0) > 12 ? 2 : 1;
-    let s = `<svg class="graf" viewBox="0 0 ${W} ${H}" role="img" aria-label="Graf">`;
+    let s = `<svg class="graf" viewBox="0 0 ${W} ${H}" role="img" aria-label="Graph">`;
     for (let x = Math.ceil(x0); x <= x1; x += 1) s += `<line x1="${sx(x)}" x2="${sx(x)}" y1="${sy(y0)}" y2="${sy(y1)}" stroke="var(--graf-grid)"/>`;
     for (let y = Math.ceil(y0); y <= y1; y += 1) s += `<line x1="${sx(x0)}" x2="${sx(x1)}" y1="${sy(y)}" y2="${sy(y)}" stroke="var(--graf-grid)"/>`;
     s += `<line x1="${sx(x0)}" x2="${sx(x1)}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--graf-osa)" stroke-width="1.3"/>`;
@@ -407,6 +407,6 @@
     else domu();
   }
   window.addEventListener("hashchange", trasa);
-  if (!K || !KOLA.length) app.innerHTML = "<p>Nepodařilo se načíst úlohy.</p>";
+  if (!K || !KOLA.length) app.innerHTML = "<p>Could not load the questions.</p>";
   else trasa();
 })();

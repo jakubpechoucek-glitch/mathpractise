@@ -7,12 +7,14 @@ Další kolo se odemkne, až je to předchozí dokončené.
 **Web:** https://jakubpechoucek-glitch.github.io/mathpractise/
 (náhled všech kol bez odemykání: `?vse`)
 
+Aplikace i úlohy jsou **anglicky**, protože Lukáš studuje v angličtině. Dokumentace je česky.
+
 ## Jak to funguje
 
 - Lukáš počítá na papíře nebo v kalkulačce a do políčka zapíše **jen výsledek**.
 - Odpověď se zkontroluje hned. Na každou úlohu má 3 pokusy (u výběru z možností 2), pak se ukáže řešení.
-- Pod políčkem se průběžně ukazuje, jak aplikace zápisu rozumí („Rozumím tomu jako…“).
-- Úlohy, které napoprvé nevyšly, se dají kdykoli procvičit znovu (sekce *K zopakování*).
+- Pod políčkem se průběžně ukazuje, jak aplikace zápisu rozumí („I read this as…“).
+- Úlohy, které napoprvé nevyšly, se dají kdykoli procvičit znovu (sekce *To review*).
 - Postup se ukládá v prohlížeči na iPadu (localStorage).
 
 ## Soubory

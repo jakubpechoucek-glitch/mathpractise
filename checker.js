@@ -34,7 +34,7 @@
       if (/\s/.test(c)) { i++; continue; }
       if (/[0-9.]/.test(c)) {
         const m = /^(\d+\.?\d*|\.\d+)/.exec(s.slice(i));
-        if (!m) throw new Error("Nerozumím číslu u znaku „" + c + "“.");
+        if (!m) throw new Error("I can't read the number at \"" + c + "\".");
         tokeny.push({ t: "num", v: parseFloat(m[1]), text: m[1] });
         i += m[1].length;
         continue;
@@ -67,7 +67,7 @@
       if ("+-*/^()|".includes(c)) { tokeny.push({ t: "op", v: c }); i++; continue; }
       if (c === "[" || c === "{") { tokeny.push({ t: "op", v: "(" }); i++; continue; }
       if (c === "]" || c === "}") { tokeny.push({ t: "op", v: ")" }); i++; continue; }
-      throw new Error("Nerozumím znaku „" + c + "“.");
+      throw new Error("I don't understand the character \"" + c + "\".");
     }
     return tokeny;
   }
@@ -76,7 +76,7 @@
 
   function parsuj(vstup) {
     const tokeny = tokenizuj(normalizuj(vstup));
-    if (!tokeny.length) throw new Error("Odpověď je prázdná.");
+    if (!tokeny.length) throw new Error("The answer is empty.");
     let p = 0;
     let vAbs = 0; // jsme uvnitř |…| – pak | neznamená začátek nové absolutní hodnoty
     const dalsi = () => tokeny[p];
@@ -120,7 +120,7 @@
     }
     function primar() {
       const t = dalsi();
-      if (!t) throw new Error("Výraz je nedokončený.");
+      if (!t) throw new Error("The expression is incomplete.");
       if (t.t === "num") { p++; return { t: "num", v: t.v, text: t.text }; }
       if (t.t === "const") { p++; return { t: "const", n: t.n }; }
       if (t.t === "var") { p++; return { t: "var", n: t.n }; }
@@ -132,7 +132,7 @@
         let arg;
         if (jeOp("(")) { p++; arg = vyraz(); zavri(")"); }
         else if (zacinaPrimar() || jeOp("-")) arg = jeOp("-") ? unarni() : mocnina();  // sin x, sqrt3
-        else throw new Error("Za " + t.n + " chybí argument.");
+        else throw new Error("Missing argument after " + t.n + ".");
         const f = { t: "fn", f: t.n, a: arg };
         if (t.zaklad) f.z = t.zaklad;
         return exponent ? { t: "bin", op: "^", a: f, b: exponent } : f;
@@ -145,15 +145,15 @@
         zavri("|");
         return { t: "fn", f: "abs", a: e };
       }
-      throw new Error("Nečekaný znak „" + t.v + "“.");
+      throw new Error("Unexpected \"" + t.v + "\".");
     }
     function zavri(v) {
-      if (!jeOp(v)) throw new Error(v === ")" ? "Chybí zavírací závorka )." : "Chybí zavírací |.");
+      if (!jeOp(v)) throw new Error(v === ")" ? "Missing closing bracket )." : "Missing closing |.");
       p++;
     }
 
     const ast = vyraz();
-    if (p < tokeny.length) throw new Error("Nerozumím části „" + (tokeny[p].v || tokeny[p].n || tokeny[p].text) + "“.");
+    if (p < tokeny.length) throw new Error("I don't understand \"" + (tokeny[p].v || tokeny[p].n || tokeny[p].text) + "\".");
     return ast;
   }
 
@@ -170,7 +170,7 @@
       case "num": return ast.v;
       case "const": return ast.n === "pi" ? Math.PI : Math.E;
       case "var":
-        if (!prom || !(ast.n in prom)) throw new Error("Neznámá proměnná " + ast.n + ".");
+        if (!prom || !(ast.n in prom)) throw new Error("Unknown variable " + ast.n + ".");
         return prom[ast.n];
       case "zav": return vyhodnot(ast.a, prom);
       case "neg": return -vyhodnot(ast.a, prom);
@@ -186,7 +186,7 @@
         return Math.pow(a, b);
       }
     }
-    throw new Error("Neznámý uzel");
+    throw new Error("Unknown node");
   }
 
   function promenne(ast, mnozina) {
@@ -284,20 +284,20 @@
   function porovnejCislo(vstupAst, ocekavano, platne, mista) {
     platne = platne || 3;
     const hodnota = vyhodnot(vstupAst, {});
-    if (!isFinite(hodnota)) return { ok: false, zprava: "Tahle odpověď nemá konečnou hodnotu." };
+    if (!isFinite(hodnota)) return { ok: false, zprava: "This answer doesn't have a finite value." };
     if (blizko(hodnota, ocekavano, 1e-9)) return { ok: true };
     // Zaokrouhlenou odpověď uznáme, když je to desetinné číslo nebo samotné číslo (939 místo 938,57…).
     // Výraz typu 2sqrt(3) musí sedět přesně.
     if (maDesetinne(vstupAst) || jeLiteral(vstupAst)) {
       const rozdil = Math.abs(hodnota - ocekavano);
       if (mista !== undefined) {
-        if (rozdil <= 0.5 * Math.pow(10, -mista) * (1 + 1e-9)) return { ok: true, zprava: "Správně (zaokrouhleno)." };
-        if (rozdil <= 5 * Math.pow(10, -mista)) return { ok: false, skoro: true, zprava: mista === 0 ? "Skoro! Zkontroluj zaokrouhlení na celé číslo." : "Skoro! Zkontroluj zaokrouhlení na " + mista + " desetinná místa." };
+        if (rozdil <= 0.5 * Math.pow(10, -mista) * (1 + 1e-9)) return { ok: true, zprava: "Correct (rounded)." };
+        if (rozdil <= 5 * Math.pow(10, -mista)) return { ok: false, skoro: true, zprava: mista === 0 ? "Almost! Check your rounding to the nearest whole number." : "Almost! Check your rounding to " + mista + " decimal places." };
         return { ok: false };
       }
-      if (rozdil <= toleranceProPlatne(ocekavano, platne)) return { ok: true, zprava: "Správně (zaokrouhleno)." };
+      if (rozdil <= toleranceProPlatne(ocekavano, platne)) return { ok: true, zprava: "Correct (rounded)." };
       if (Math.abs(hodnota - ocekavano) <= toleranceProPlatne(ocekavano, Math.max(1, platne - 1)) * 1.0001)
-        return { ok: false, skoro: true, zprava: "Skoro! Zaokrouhli přesněji – aspoň na " + platne + " platné číslice." };
+        return { ok: false, skoro: true, zprava: "Almost! Round more accurately – to at least " + platne + " significant figures." };
     }
     return { ok: false };
   }
@@ -324,7 +324,7 @@
         else if (!blizko(d, rozdil, 1e-7)) return { ok: false };
       } else if (!blizko(a, b, 1e-7)) return { ok: false };
     }
-    if (platnych < 4) return { ok: false, zprava: "Výraz se nedá ověřit – zkontroluj ho prosím." };
+    if (platnych < 4) return { ok: false, zprava: "This expression can't be checked – please look at it again." };
     return { ok: true };
   }
 
@@ -351,7 +351,7 @@
       if (uloha.typ === "cislo") {
         const ast = parsuj(bezLeveStrany(vstup));
         const nezname = [...promenne(ast)];
-        if (nezname.length) return { ok: false, chybaVstupu: true, zprava: "Tady se čeká číslo, ale v odpovědi je " + nezname.join(", ") + "." };
+        if (nezname.length) return { ok: false, chybaVstupu: true, zprava: "A number is expected here, but your answer contains " + nezname.join(", ") + "." };
         return porovnejCislo(ast, vyhodnot(parsuj(String(uloha.odpoved)), {}), uloha.platneCislice, uloha.desetinnaMista);
       }
 
@@ -359,18 +359,18 @@
         const casti = rozdelReseni(vstup);
         const ocekavane = uloha.odpoved.map((o) => vyhodnot(parsuj(String(o)), {}));
         if (casti.length !== ocekavane.length)
-          return { ok: false, zprava: "Počet řešení nesedí – " + (casti.length < ocekavane.length ? "nějaké chybí." : "některé je navíc.") };
+          return { ok: false, zprava: "Wrong number of solutions – " + (casti.length < ocekavane.length ? "some are missing." : "there are too many.") };
         const zbyva = ocekavane.slice();
         let zaokrouhleno = false;
         for (const c of casti) {
           const ast = parsuj(c);
-          if (promenne(ast).size) return { ok: false, chybaVstupu: true, zprava: "Řešení piš jako čísla oddělená středníkem, např. 2; -3." };
+          if (promenne(ast).size) return { ok: false, chybaVstupu: true, zprava: "Write the solutions as numbers separated by semicolons, e.g. 2; -3." };
           const i = zbyva.findIndex((o) => porovnejCislo(ast, o, uloha.platneCislice, uloha.desetinnaMista).ok);
           if (i < 0) return { ok: false };
           if (!blizko(vyhodnot(ast, {}), ocekavane[i], 1e-9)) zaokrouhleno = true;
           zbyva.splice(i, 1);
         }
-        return { ok: true, zprava: zaokrouhleno ? "Správně (zaokrouhleno)." : undefined };
+        return { ok: true, zprava: zaokrouhleno ? "Correct (rounded)." : undefined };
       }
 
       if (uloha.typ === "vyraz") {
@@ -378,18 +378,18 @@
         const ast = parsuj(bezLeveStrany(vstup));
         const povolene = new Set(nazvy.concat(uloha.konstanta ? ["C", "c", "K"] : []));
         const cizi = [...promenne(ast)].filter((n) => !povolene.has(n));
-        if (cizi.length) return { ok: false, chybaVstupu: true, zprava: "Neznámá proměnná " + cizi.join(", ") + " (počítá se s " + nazvy.join(", ") + ")." };
+        if (cizi.length) return { ok: false, chybaVstupu: true, zprava: "Unknown variable " + cizi.join(", ") + " (use " + nazvy.join(", ") + ")." };
         const vysledek = porovnejVyrazy(ast, parsuj(uloha.odpoved), nazvy, uloha.konstanta);
         if (vysledek.ok && uloha.tvar === "soucin" && !jeSoucin(ast))
-          return { ok: false, skoro: true, zprava: "Hodnota sedí, ale úloha chce výraz rozložit na součin." };
+          return { ok: false, skoro: true, zprava: "The value is right, but the question asks you to factorise." };
         if (vysledek.ok && uloha.konstanta && ![...promenne(ast)].some((n) => n === "C" || n === "c" || n === "K"))
-          return { ok: true, zprava: "Správně – jen nezapomeň na + C." };
+          return { ok: true, zprava: "Correct – just don't forget + C." };
         return vysledek;
       }
     } catch (e) {
       return { ok: false, chybaVstupu: true, zprava: e.message };
     }
-    return { ok: false, zprava: "Neznámý typ úlohy." };
+    return { ok: false, zprava: "Unknown question type." };
   }
 
   // Náhled zápisu pro políčko odpovědi – LaTeX, nebo chyba
