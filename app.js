@@ -46,7 +46,9 @@
       hotovo: uzavreno === kolo.ulohy.length,
     };
   }
-  const jeOdemceno = (i) => ODEMKNOUT_VSE || i === 0 || prehledKola(KOLA[i - 1]).hotovo;
+  // Odemykání po kolech je vypnuté (všechna kola otevřená). Zpět zapnout: ZAMYKAT_KOLA = true.
+  const ZAMYKAT_KOLA = false;
+  const jeOdemceno = (i) => !ZAMYKAT_KOLA || ODEMKNOUT_VSE || i === 0 || prehledKola(KOLA[i - 1]).hotovo;
   const kOpakovani = () => VSECHNA.flatMap((k) => k.ulohy).filter((u) => stav.ulohy[u.id] && stav.ulohy[u.id].uzavreno && !stav.ulohy[u.id].prvni);
 
   // ---------- pomocné ----------
@@ -79,7 +81,7 @@
     app.innerHTML = `
       <a class="zpet" href="/rozcestnik/">← Rozcestník</a>
       <h1>Exponentials &amp; Logarithms</h1>
-      <p class="lead">Assessment prep in 7 rounds – one round a day. The next round unlocks when you finish the previous one.
+      <p class="lead">Assessment prep in 7 rounds. All rounds are open – pick any one you want to practise.
         Work on paper or with your calculator, and type only the final answer here.</p>
       <ol class="cesta" aria-label="Progress">
         ${KOLA.map((k, i) => `<li class="${prehledKola(k).hotovo ? "hotovo" : i === prvniNehotove ? "ted" : ""}"></li>`).join("")}
@@ -175,7 +177,7 @@
     return `<div class="hotovo-banner">
       <h2>Round complete 🎉</h2>
       <p>Right first time: ${p.napoprve} of ${p.celkem}. Correct in total: ${p.spravne}.
-        ${dalsi ? `Day ${i + 2} is now unlocked: ${esc(dalsi.nazev)}.` : "That was the last round – good luck in the assessment!"}</p>
+        ${dalsi ? `Next up: day ${i + 2} – ${esc(dalsi.nazev)}.` : "That was the last round – good luck in the assessment!"}</p>
       ${dalsi ? `<a href="#/kolo/${dalsi.id}">Continue to day ${i + 2} →</a> · ` : ""}<a href="#/">All rounds</a>
     </div>`;
   }
