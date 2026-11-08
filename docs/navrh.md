@@ -66,7 +66,7 @@ Kola jdou podle témat v pořadí, ve kterém se probírala. Poslední kolo je z
 Celkem 102 úloh, asi 30–45 minut denně. Úlohy s více částmi (a), (b), (c) jsou rozdělené na
 samostatné úlohy se společným úvodem. Části, které jen opakují předchozí krok, jsou vynechané.
 
-**Odemykání:** kolo je dokončené, když jsou všechny jeho úlohy uzavřené: správně vyřešené,
+**Odemykání (od 8. 11. vypnuté):** na přání jsou všechna kola otevřená hned. Zpět se zapne konstantou `ZAMYKAT_KOLA = true` v `app.js`. Původní pravidlo: kolo je dokončené, když jsou všechny jeho úlohy uzavřené: správně vyřešené,
 nebo po vyčerpání pokusů, nebo po zobrazení řešení. Nečeká se na kalendářní den. Když chce
 Lukáš udělat dvě kola za den, může. Parametr `?vse` odemkne všechno, aby rodič mohl úlohy
 projít předem.
