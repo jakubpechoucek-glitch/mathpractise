@@ -13,7 +13,9 @@
   const params = new URLSearchParams(location.search);
   const ODEMKNOUT_VSE = params.has("vse");
   const app = document.getElementById("app");
-  const KOLA = window.KOLA || [];
+  const VSECHNA = window.KOLA || [];
+  const KOLA = VSECHNA.filter((k) => !k.extra);     // 7 kol, odemykají se postupně
+  const EXTRA = VSECHNA.filter((k) => k.extra);     // samostatné sady, odemčené hned
   const K = window.Kontrola;
 
   // ---------- stav ----------
@@ -45,7 +47,7 @@
     };
   }
   const jeOdemceno = (i) => ODEMKNOUT_VSE || i === 0 || prehledKola(KOLA[i - 1]).hotovo;
-  const kOpakovani = () => KOLA.flatMap((k) => k.ulohy).filter((u) => stav.ulohy[u.id] && stav.ulohy[u.id].uzavreno && !stav.ulohy[u.id].prvni);
+  const kOpakovani = () => VSECHNA.flatMap((k) => k.ulohy).filter((u) => stav.ulohy[u.id] && stav.ulohy[u.id].uzavreno && !stav.ulohy[u.id].prvni);
 
   // ---------- pomocné ----------
 
@@ -100,6 +102,17 @@
             : `<div class="kolo ${trida}" aria-disabled="true">${obsah}</div>`}</li>`;
         }).join("")}
       </ul>
+      ${EXTRA.length ? `<h2 class="sekce">Extra practice</h2>
+      <ul class="kola">
+        ${EXTRA.map((k) => {
+          const p = prehledKola(k);
+          const stavText = p.hotovo ? `✓ ${p.spravne}/${p.celkem}` : p.uzavreno ? `${p.uzavreno}/${p.celkem} done` : "Start →";
+          return `<li><a class="kolo extra ${p.hotovo ? "hotovo" : ""}" href="#/kolo/${k.id}">
+            <span class="den">${esc(k.stitek || "extra")}</span>
+            <span><h2>${esc(k.nazev)}</h2><p>${otazky(k.ulohy.length)} · ${esc(k.popis)}</p></span>
+            <span class="stav">${stavText}</span></a></li>`;
+        }).join("")}
+      </ul>` : ""}
       ${opak.length ? `<a class="opakovani" href="#/opakovani"><span>To review: ${otazky(opak.length)} you didn't get right first time</span><span>Practise →</span></a>` : ""}
       <p class="paticka">Your progress is saved in this browser. <button type="button" id="smazat">Start again from scratch</button></p>`;
     app.querySelector("#smazat").addEventListener("click", () => {
@@ -114,6 +127,8 @@
   // ---------- kolo ----------
 
   function zobrazKolo(id) {
+    const extra = EXTRA.find((k) => k.id === id);
+    if (extra) return zobrazExtra(extra);
     const i = KOLA.findIndex((k) => k.id === id);
     if (i < 0 || !jeOdemceno(i)) { location.hash = ""; return; }
     const kolo = KOLA[i];
@@ -130,7 +145,28 @@
         if (p.hotovo && !stav.kola[kolo.id]) { stav.kola[kolo.id] = Date.now(); uloz(); }
         return p.hotovo ? banner(kolo, i, p) : "";
       },
-      ukazPokrok: () => { const p = prehledKola(kolo); return `${p.uzavreno}/${p.celkem} hotovo`; },
+      ukazPokrok: () => { const p = prehledKola(kolo); return `${p.uzavreno}/${p.celkem} done`; },
+    });
+  }
+
+  function zobrazExtra(kolo) {
+    document.title = kolo.nazev;
+    vykresliSadu({
+      nadpis: kolo.nazev,
+      podnadpis: "Extra practice",
+      popis: kolo.popis,
+      stitky: [kolo.kalkulacka ? "🧮 calculator allowed" : "🚫 no calculator"],
+      ulohy: kolo.ulohy,
+      sada: stav.ulohy,
+      poZmene: () => {
+        const p = prehledKola(kolo);
+        if (!p.hotovo) return "";
+        if (!stav.kola[kolo.id]) { stav.kola[kolo.id] = Date.now(); uloz(); }
+        return `<div class="hotovo-banner"><h2>Set complete 🎉</h2>
+          <p>Right first time: ${p.napoprve} of ${p.celkem}. Correct in total: ${p.spravne}.</p>
+          <a href="#/">All rounds</a></div>`;
+      },
+      ukazPokrok: () => { const p = prehledKola(kolo); return `${p.uzavreno}/${p.celkem} done`; },
     });
   }
 
@@ -407,6 +443,6 @@
     else domu();
   }
   window.addEventListener("hashchange", trasa);
-  if (!K || !KOLA.length) app.innerHTML = "<p>Could not load the questions.</p>";
+  if (!K || !VSECHNA.length) app.innerHTML = "<p>Could not load the questions.</p>";
   else trasa();
 })();

@@ -11,9 +11,13 @@
 - [x] Testy: `node tools/test_checker.js`, `node tools/test_data.js`
 - [x] Dlaždice na Rozcestníku a karta v dokumentaci projektů
 
+## 8. 11. 2026
+
+- [x] Rozhraní v angličtině
+- [x] Extra sada „New question types“ (17 úloh) z review 3.08 a 3.09, odemčená hned
+
 ## Zbývá / nápady
 
-- [ ] Zapnout GitHub Pages (Settings → Pages → branch `main`, složka `/`)
 - [ ] Rozhodnout otevřené otázky v `docs/navrh.md` (veřejné úlohy, přihlášení, jedno kolo denně)
 - [ ] Postup do Supabase, aby ho rodič viděl odkudkoli
 - [ ] Další témata: nová sada = nový soubor v `data/` a přepínač témat na úvodní stránce

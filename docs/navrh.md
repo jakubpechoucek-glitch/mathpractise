@@ -28,6 +28,27 @@ do `data/kola.js`. Výsledky jsou spočítané znovu a porovnané s markscheme (
 - *Lesson 3.05 Example 1b* `ln x − ln 5 = ln(2x + 3)`: ve slidu je `x = −5/3`, ale to nesplňuje
   definiční obor. Rovnice **nemá řešení**. V aplikaci je z toho úloha přesně na tuhle past.
 
+## Extra sada: nové typy z review 3.08 a 3.09 (8. 11.)
+
+Učitel poslal poslední review (3.08 review & applications, poznámky k němu, 3.09 review).
+Většina úloh už v 7 kolech je, některé doslova (Lesson 3.05 Examples). Nové jsou tyhle typy:
+
+| Nový typ | Příklad | Úloha |
+|---|---|---|
+| Neznámá v základu logaritmu, $\log_x a = 1/\log_a x$ | $\log_4 x + \log_x 4 = 2$ | x1-07, x1-08 |
+| Základ zlomek | $\log_{1/2}(3 - x) = 5$ | x1-04 |
+| Porovnání koeficientů po změně základu | $a + b\log_4 7 + 60\log_8 14 = 0$ | x1-09, x1-10 |
+| Spojitý růst a pokles $N = N_0e^{kt}$, převod jednotek, doba zdvojnásobení | králíci $N = 20e^{0.1t}$ | x1-11 až x1-13 |
+| Graf $a\ln(x+b)+c$: průsečíky a asymptota | $f(x) = 2\ln(x+1) - 2$ | x1-14, x1-15 |
+| Skrytá kvadratická rovnice s $4^{x+1}$ a zápis přes $\ln 2$, $\ln 6$ | $4^{2x} - 5\cdot4^{x+1} + 64 = 0$ | x1-01 až x1-03 |
+
+Sada je v `data/kola.js` s příznakem `extra: true`. Je odemčená hned, nezávisí na 7 kolech
+a na úvodní stránce je v sekci *Extra practice*. Postup v 7 kolech se tím nemění, protože úlohy
+mají nová id (`x1-…`).
+
+Z podkladů: assessment Unit 3 je **v pondělí 9. 11.**, 70 minut, 64 bodů, část bez kalkulačky
+a část s kalkulačkou. Odpověď v Oxford 4S Q5 ($x = 16$) potvrzuje opravu slidu Lesson 3.05 You Try 2b.
+
 ## Rozdělení do 7 kol
 
 Kola jdou podle témat v pořadí, ve kterém se probírala. Poslední kolo je zkouška nanečisto.
