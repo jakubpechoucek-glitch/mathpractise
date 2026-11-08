@@ -179,3 +179,7 @@ a.kolo:hover, a.kolo:focus-visible { border-color: var(--ink); }
 @media (prefers-reduced-motion: no-preference) {
   .uloha { transition: border-color .2s ease; }
 }
+
+/* samostatné sady mimo 7 kol */
+.sekce { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 32px 0 12px; }
+.kolo.extra .den { background: var(--ink-soft); color: var(--ink); font-size: .62rem; }
